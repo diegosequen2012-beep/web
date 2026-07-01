@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creador de Memes Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Anton&family=Permanent+Marker&family=Creepster&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            /* Fondo con degradado llamativo y moderno */
+            background: linear-gradient(135deg, #f50057, #d500f9, #2979ff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #ffffff;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1 {
+            font-family: 'Bangers', cursive;
+            font-size: 3rem;
+            letter-spacing: 2px;
+            color: #fffb00;
+            text-shadow: 3px 3px 0px #000;
+            margin-bottom: 5px;
+        }
+
+        p {
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .contenedor-principal {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 25px;
+        }
+
+        .controles {
+            background-color: rgba(0, 0, 0, 0.85);
+            padding: 25px;
+            border-radius: 15px;
+            width: 320px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            backdrop-filter: blur(5px);
+            border: 2px solid #fffb00;
+        }
+
+        label {
+            text-align: left;
+            font-weight: bold;
+            font-size: 14px;
+            color: #00ffcc;
+            text-transform: uppercase;
+        }
+
+        input[type="text"], select, input[type="file"] {
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            background-color: #1a1a1a;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: #00ffcc;
+        }
+
+        /* Botón de Descarga Neón */
+        .btn-descargar {
+            background: linear-gradient(90deg, #00ffcc, #00ff88);
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.4);
+            transition: 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-descargar:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(0, 255, 204, 0.7);
+        }
+
+        /* Contenedor del Canvas */
+        .contenedor-meme {
+            background-color: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 3px dashed white;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>💥 MEME GENERATOR SUPREME 💥</h1>
+    <p>¡Personaliza tus fuentes, colores y descarga tu creación al instante!</p>
+
+    <div class="contenedor-principal">
+        
+        <div class="controles">
+            <label>1. Elige una plantilla:</label>
+            <select id="selector-plantilla" onchange="cambiarPlantilla()">
+                <option value="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600">Gato Pensativo</option>
+                <option value="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600">Perrito Sonriente</option>
+                <option value="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600">Paisaje Épico</option>
+            </select>
+
+            <label>O sube tu propia imagen:</label>
+            <input type="file" id="subir-imagen" accept="image/*" onchange="cargarImagenUsuario(event)">
+
+            <label>2. Estilo de Letra:</label>
+            <select id="selector-fuente" onchange="dibujarMeme()">
+                <option value="Impact">Clásica (Impact)</option>
+                <option value="Bangers">Estilo Comic (Bangers)</option>
+                <option value="Anton">Bloque (Anton)</option>
+                <option value="Permanent Marker">Marcador (Permanent Marker)</option>
+                <option value="Creepster">Terror (Creepster)</option>
+            </select>
+
+            <label>3. Texto Superior:</label>
+            <input type="text" id="input-superior" value="CUANDO POR FIN" placeholder="Texto de arriba" oninput="dibujarMeme()">
+
+            <label>4. Texto Inferior:</label>
+            <input type="text" id="input-inferior" value="ENTIENDES EL CÓDIGO" placeholder="Texto de abajo" oninput="dibujarMeme()">
+
+            <button class="btn-descargar" onclick="descargarMeme()">💾 Descargar Meme</button>
+        </div>
+
+        <div class="contenedor-meme">
+            <canvas id="memeCanvas" width="500" height="500"></canvas>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('memeCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const inputSuperior = document.getElementById('input-superior');
+        const inputInferior = document.getElementById('input-inferior');
+        const selectorPlantilla = document.getElementById('selector-plantilla');
+        const selectorFuente = document.getElementById('selector-fuente');
+
+        // Crear objeto de imagen global para manejar los cambios
+        let imgBase = new Image();
+        imgBase.crossOrigin = "anonymous"; // Evita problemas de privacidad al descargar recursos externos
+        imgBase.src = selectorPlantilla.value;
+
+        // Cuando la imagen cargue por primera vez o cambie, dibuja el canvas
+        imgBase.onload = function() {
+            dibujarMeme();
+        };
+
+        // Función principal que renderiza la imagen y los textos en el Canvas
+        function dibujarMeme() {
+            // Limpiar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar la imagen de fondo estirada al tamaño del canvas
+            ctx.drawImage(imgBase, 0, 0, canvas.width, canvas.height);
+            
+            // Configurar el estilo del texto
+            const fuenteSeleccionada = selectorFuente.value;
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 6;
+            ctx.textAlign = 'center';
+            ctx.font = `bold 40px ${fuenteSeleccionada}`;
+            ctx.textBaseline = 'top';
+
+            // Dibujar Texto Superior
+            const textoSup = inputSuperior.value.toUpperCase();
+            ctx.strokeText(textoSup, canvas.width / 2, 20);
+            ctx.fillText(textoSup, canvas.width / 2, 20);
+
+            // Dibujar Texto Inferior
+            ctx.textBaseline = 'bottom';
+            const textoInf = inputInferior.value.toUpperCase();
+            ctx.strokeText(textoInf, canvas.width / 2, canvas.height - 20);
+            ctx.fillText(textoInf, canvas.width / 2, canvas.height - 20);
+        }
+
+        // Cambiar plantilla desde el select
+        function cambiarPlantilla() {
+            imgBase.src = selectorPlantilla.value;
+        }
+
+        // Cargar imagen local del usuario
+        function cargarImagenUsuario(event) {
+            const archivo = event.target.files[0];
+            if (archivo) {
+                const lector = new FileReader();
+                lector.onload = function(e) {
+                    imgBase.src = e.target.result;
+                }
+                lector.readAsDataURL(archivo);
+            }
+        }
+
+        // Función mágica para descargar el contenido del Canvas como imagen PNG
+        function descargarMeme() {
+            const enlace = document.createElement('a');
+            enlace.download = 'mi-meme-genial.png';
+            enlace.href = canvas.toDataURL('image/png');
+            enlace.click();
+        }
+    </script>
+
+</body>
+</html>
